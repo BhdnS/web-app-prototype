@@ -23,7 +23,7 @@ const createOrder = async (req, res) => {
     })
     await orderItem.save()
 
-    res.status(201).json({ message: 'Product added!' })
+    res.status(201).json(product)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'An error occurred while adding data' })
@@ -35,18 +35,15 @@ const reviewOrder = async (req, res) => {
     const { customerId } = req.customer
     const orders = await Order.find({ customerId })
 
-    const orderItems = orders.map((order) =>
-      OrderItem.find({ orderId: order._id }).lean()
-    )
-    const productId = await Promise.all(orderItems)
-      .then((res) => res.flat())
-      .then((products) => products.map((product) => product.productId))
-
-    const products = await Promise.all(
-      productId.map((id) => Product.find({ _id: id }))
+    const orderItems = await Promise.all(
+      orders.map((order) => OrderItem.find({ orderId: order._id }).lean())
     )
 
-    res.json(products.flat())
+    const productIds = orderItems.flat().map((orderItem) => orderItem.productId)
+
+    const products = await Product.find({ _id: { $in: productIds } })
+
+    res.json(products)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -70,9 +67,7 @@ const deleteOrder = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' })
     }
 
-    res.json({
-      message: 'Product and associated OrderItem deleted successfully',
-    })
+    res.status(200).json(deletedProduct)
   } catch (err) {
     res.status(500).json({
       error:
@@ -96,7 +91,7 @@ const editOrder = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' })
     }
 
-    res.json({ message: 'Product updated', product: updatedProduct })
+    res.status(200).json(updatedProduct)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
