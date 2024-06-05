@@ -16,7 +16,6 @@ const useAllOrders = () => {
   const handleDeleteClick = (id) => {
     if (token) {
       dispatch(deleteOrder(id))
-      dispatch(fetchAllOrders())
     }
   }
 

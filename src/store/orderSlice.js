@@ -66,7 +66,7 @@ export const deleteOrder = createAsyncThunk(
         throw new Error('Failed to delete order')
       }
 
-      return orderId
+      return await response.json()
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -139,7 +139,7 @@ const orderSlice = createSlice({
       })
       .addCase(deleteOrder.fulfilled, (state, { payload }) => {
         state.loading = false
-        state.orders = state.orders.filter((order) => order.id !== payload)
+        state.orders = state.orders.filter((order) => order._id !== payload._id)
       })
       .addCase(deleteOrder.rejected, (state, { payload }) => {
         state.loading = false
@@ -151,7 +151,9 @@ const orderSlice = createSlice({
       })
       .addCase(editOrder.fulfilled, (state, { payload }) => {
         state.loading = false
-        const index = state.orders.findIndex((order) => order.id === payload.id)
+        const index = state.orders.findIndex(
+          (order) => order._id === payload._id
+        )
         if (index !== -1) {
           state.orders[index] = payload
         }
